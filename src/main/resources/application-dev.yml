@@ -1,0 +1,7 @@
+jwt:
+  secret: qaq9P3N0AmmJBrWg2x0whCdGGg9UoZZnU86d6bFdxj+r6rnANOcXFcnIVOueTnlP
+  devToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRldi1Vc2VyIiwiaWF0IjoxNTE2MjM5MDIyMiwicm9sZSI6IkFkbWluIn0.aoRilFXbdyzITTYcU6Szl_8kL4PB40zTCwYvzN6ib4Q
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
