@@ -20,7 +20,10 @@ public class SecurityConfig {
 
     @Bean
     SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http) {
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
+        http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
+
         http.securityContextRepository(securityContextRepository);
         http.authorizeExchange(authorize -> authorize
             .pathMatchers("/auth/**")
