@@ -49,7 +49,8 @@ jobs:
       # Debug: Log PR branch
       - name: Debug PR Branch
         if: steps.check_command.outputs.valid == 'true'
-        run: echo "Branch: ${{ steps.pr_details.outputs.result }}"
+        run: |
+          echo "Branch: ${{ steps.pr_details.outputs.result }}"
 
       # Step 3: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
