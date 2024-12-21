@@ -1,4 +1,4 @@
-name: Handle Slash Commands in PR Comments
+name: Handle Deployment Commands in PR Comments
 
 on:
   issue_comment:
