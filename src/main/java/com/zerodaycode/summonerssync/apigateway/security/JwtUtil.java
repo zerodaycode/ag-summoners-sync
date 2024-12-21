@@ -1,13 +1,13 @@
 package com.zerodaycode.summonerssync.apigateway.security;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,91 +17,38 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class JwtUtil {
-    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+    // TODO: ctes below are intended to be hold in the Rust FFI lib, and shared between the Java
+    // artifacts to create the token with the same lib
+    public static final String TOKEN_ISSUER = "https://summoners-sync.io";
+    public static final String TOKEN_SCOPE = "scope";
+    public static final String TOKEN_SUBJECT = "client-app";
+    public static final String TOKEN_CLAIM_USER = "user-id";
+    public static final String TOKEN_CLAIM_DEVICE = "device-id";
+    public static final String[] TOKEN_SCOPE_ARRAY = new String[]{"authentication", "authorization"};
+    public static final String[] TOKEN_AUDIENCES_ARRAY = new String[]{"public-api", "login", "register"};
 
     @Value("${jwt.secret:}")
     private String secretKey;
-//
-//    public HttpStatus validateToken(String token, Roles roles) {
-//        try {
-//            Claims claims = Jwts.parserBuilder()
-//                .setSigningKey(secretKey.getBytes())
-//                .build()
-//                .parseClaimsJws(token)
-//                .getBody();
-//
-//            String role = claims.get("role", String.class);
-//            log.info("JWT claims extracted. Role: {}", role);
-//
-//            if (!roles.getRoles().contains(role)) {
-//                return HttpStatus.FORBIDDEN;
-//            }
-//        } catch (SignatureException e) {
-//            return HttpStatus.UNAUTHORIZED;
-//        }
-//
-//        return HttpStatus.OK;
-//    }
-//
+
     public String extractJwt(final HttpHeaders headers) {
         final String authHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
-        return (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : null;
+        return (authHeader != null && authHeader.startsWith("Bearer ")) ? authHeader.substring(7) : "";
     }
-//    @SneakyThrows
-//public boolean validateToken(final String token)
-////    throws JwtTokenMalformedException, JwtTokenMissingException
-//{
-//    try {
-//        Jwts.parserBuilder()
-//            .setSigningKey(secretKey.getBytes())
-//            .build()
-//            .parseClaimsJws(token);
-//         // TODO: enum with custom auth statuses?
-//        return true;
-//    } catch (SignatureException ex) {
-//        throw new RuntimeException("Invalid JWT signature");
-//    }
+
     public Mono<DecodedJWT> validateToken(String token) {
-    try {
-        return Mono.just(JWT
-//                    .create()
-                    .require(Algorithm.HMAC256(secretKey))
-                    .withAudience(token)
-//                .require(algorithm)
-//                .withKeyId(secretKey)
-//                .withIssuer("zero-day-code-issuer")
-                .build())
-            .map(verifier -> {
-                var r = verifier.verify(token);
-                log.info("JWT verified with {}", r.getSignature());
-                return r;
-            });
-    } catch (SignatureVerificationException
-             | AlgorithmMismatchException
-             | TokenExpiredException
-             | InvalidClaimException e) {
-        return Mono.error(() -> new RuntimeException("Token Verification Failed - {}", e));
+        final var algorithm = Algorithm.HMAC256(secretKey);
+        final var verifier = Mono.just(JWT
+            .require(algorithm)
+            .build());
+        try {
+            return verifier
+                .map(v -> v.verify(token));
+        } catch (SignatureVerificationException
+                 | AlgorithmMismatchException
+                 | TokenExpiredException
+                 | InvalidClaimException e) {
+            return Mono.error(() -> new RuntimeException(/*TODO: review this except*/"Token Verification Failed - {}", e));
+        }
     }
 }
-//    return false;
-//    } catch (MalformedJwtException ex) {
-//        throw new JwtTokenMalformedException("Invalid JWT token");
-//    } catch (ExpiredJwtException ex) {
-//        throw new JwtTokenMalformedException("Expired JWT token");
-//    } catch (UnsupportedJwtException ex) {
-//        throw new JwtTokenMalformedException("Unsupported JWT token");
-//    } catch (IllegalArgumentException ex) {
-//        throw new JwtTokenMissingException("JWT claims string is empty.");
-//    }
-}
-//    public Mono<DecodedJWT> verifyToken(String token) {
-//        try {
-//            return Mono.just(JWT.require(algorithm)
-//                    .withIssuer(TOKEN_ISSUER)
-//                    .build())
-//                .map(verifier -> verifier.verify(token));
-//        } catch (Exception e) {
-//            return Mono.error(() -> new RuntimeException("Token Verification Failed - {}", e));
-//        }
-//    }
 

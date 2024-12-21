@@ -1,6 +1,7 @@
 jwt:
+  # We can share some random secret for testing the api-gateway while in development mode (local dev)
   secret: qaq9P3N0AmmJBrWg2x0whCdGGg9UoZZnU86d6bFdxj+r6rnANOcXFcnIVOueTnlP
-  devToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRldi1Vc2VyIiwiaWF0IjoxNTE2MjM5MDIyLCJyb2xlIjoiUk9MRV9BRE1JTiJ9.HqlzbTcDm_ADxxBlHGoCb-67sdMBOw4xjListL8CBrU
+  devToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkRldi1Vc2VyIiwiaWF0IjoxNTE2MjM5MDIyLCJyb2xlIjoiUk9MRV9BRE1JTiIsImlzcyI6Imh0dHBzOi8vc3VtbW9uZXJzLXN5bmMuaW8iLCJhdWQiOiJwdWJsaWMtYXBpLGxvZ2luLHJlZ2lzdGVyIiwiZXhwIjoxNzY3MTgyMzk5MDAwfQ.Uhznjnh2wVk9tkBbAX3S2-BXyYCurKLN8r3hE90N3WQ
 
 logging:
   level:

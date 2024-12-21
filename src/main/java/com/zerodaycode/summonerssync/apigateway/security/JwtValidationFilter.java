@@ -27,24 +27,27 @@ public class JwtValidationFilter extends AbstractGatewayFilterFactory<Roles> {
     }
 
     public GatewayFilter apply(Roles roles) {
-        log.info("JwtValidationFilter apply, ROLES: {}", roles);
         return (exchange, chain) -> {
-            final String token = jwtUtil.extractJwt(exchange.getRequest().getHeaders());
+            final var headers = exchange.getRequest().getHeaders();
+            final var token = jwtUtil.extractJwt(headers);
             log.info("Processing request with JWT token: {}", token);
 
             // Validate the token in dev mode
             if (activeProfile.equals("dev")) {
                 if (!devToken.equals(token)) {
+                    log.error("Invalid JWT token on 'dev' profile");
                     exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                     return exchange.getResponse().setComplete();
                 }
             } else {
-//                final var jwtStatusCode = jwtUtil.validateToken(token)
-//                    .;
-//                if (!jwtStatusCode) {
-//                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-//                    return exchange.getResponse().setComplete();
-//                }
+                try {
+                    jwtUtil.validateToken(token);
+                    // TODO: we may take care of this validation seriously,
+                    // and consume the published
+                } catch (final Exception ex) {
+                    exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    return exchange.getResponse().setComplete();
+                }
             }
 
             return chain.filter(exchange);

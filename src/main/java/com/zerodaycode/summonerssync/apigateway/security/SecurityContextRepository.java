@@ -28,7 +28,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     public Mono<SecurityContext> load(ServerWebExchange serverWebExchange) {
         return Mono.just(serverWebExchange.getRequest())
             .mapNotNull(serverHttpRequest -> serverHttpRequest.getHeaders().getFirst(HttpHeaders.AUTHORIZATION))
-            .filter(authenticationHeader -> authenticationHeader !=null && authenticationHeader.startsWith(TOKEN_PREFIX))
+            .filter(authenticationHeader -> authenticationHeader != null && authenticationHeader.startsWith(TOKEN_PREFIX))
             .switchIfEmpty(Mono.empty())
             .map(authHeader -> authHeader.replace(TOKEN_PREFIX, "".trim()))
             .flatMap(authToken -> authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authToken, authToken)))
