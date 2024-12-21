@@ -1,4 +1,4 @@
-name: Listen for Deploy PRE
+name: Handle Deploy Commands in PR Comments
 
 on:
   issue_comment:
@@ -10,13 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check if the command is `/deploy-pre`
+      # Step 1: Check if the command is `/deploy-pre`
+      - name: Check for `/deploy-pre` Command
         id: check_command
         uses: peter-evans/slash-command-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: /deploy-pre
 
+      # Step 2: Extract Branch Reference from PR
+      - name: Get Pull Request Details
+        if: steps.check_command.outputs.command == 'true'
+        id: pr_details
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.issue.pull_request;
+            if (!pr) {
+              throw new Error("The /deploy-pre command must be used in a pull request comment.");
+            }
+            return pr.head.ref;
+          result-encoding: string
+
+      # Step 3: Trigger Deploy Workflow for the PR Branch
       - name: Trigger Deploy Workflow
         if: steps.check_command.outputs.command == 'true'
         uses: actions/github-script@v6
@@ -25,6 +41,6 @@ jobs:
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "deploy-pre.yml", # Name of the deploy workflow file
-              ref: "develop"
+              workflow_id: "deploy-pre.yml", # Replace with your workflow filename
+              ref: "${{ steps.pr_details.outputs.result }}"
             })
