@@ -17,11 +17,18 @@ jobs:
         with:
           script: |
             const comment = context.payload.comment.body;
+            console.log("Comment received:", comment);
             if (comment.trim() === '/deploy-pre') {
+              console.log("Command `/deploy-pre` found.");
               return { valid: true };
             }
+            console.log("No valid command found.");
             return { valid: false };
           result-encoding: json
+
+      # Debug: Log the output of check_command
+      - name: Debug Command Check
+        run: echo "Valid command: ${{ steps.check_command.outputs.valid }}"
 
       # Step 2: Get Branch from PR
       - name: Extract PR Branch
@@ -34,8 +41,14 @@ jobs:
             if (!pr) {
               throw new Error("This command can only be used on a pull request.");
             }
+            console.log("PR branch:", pr.head.ref);
             return pr.head.ref;
           result-encoding: string
+
+      # Debug: Log PR branch
+      - name: Debug PR Branch
+        if: steps.check_command.outputs.valid == 'true'
+        run: echo "Branch: ${{ steps.pr_details.outputs.result }}"
 
       # Step 3: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
@@ -46,9 +59,10 @@ jobs:
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "deploy-pre.yml",
+              workflow_id: "deploy-pre.yml", # Replace with your deployment workflow filename
               ref: "${{ steps.pr_details.outputs.result }}"
             })
+            console.log("Triggered deploy-pre workflow for branch:", "${{ steps.pr_details.outputs.result }}");
 
       # Step 4: Post Confirmation Comment
       - name: Post Comment to PR
@@ -63,3 +77,4 @@ jobs:
               issue_number: issue_number,
               body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${{ steps.pr_details.outputs.result }}\`.`
             });
+            console.log("Commented back to PR:", issue_number);
