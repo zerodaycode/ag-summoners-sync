@@ -1,4 +1,4 @@
-name: Handle Deploy Commands in PR Comments
+name: Handle Deployment Commands in PR Comments
 
 on:
   issue_comment:
@@ -10,37 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check if the command is `/deploy-pre`
+      # Step 1: Verify Command in Comment
       - name: Check for `/deploy-pre` Command
         id: check_command
-        uses: peter-evans/slash-command-action@v4
+        uses: actions/github-script@v6
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          command: /deploy-pre
+          script: |
+            const comment = context.payload.comment.body;
+            if (comment.trim() === '/deploy-pre') {
+              return { valid: true };
+            }
+            return { valid: false };
+          result-encoding: json
 
-      # Step 2: Extract Branch Reference from PR
-      - name: Get Pull Request Details
-        if: steps.check_command.outputs.command == 'true'
+      # Step 2: Get Branch from PR
+      - name: Extract PR Branch
+        if: steps.check_command.outputs.valid == 'true'
         id: pr_details
         uses: actions/github-script@v6
         with:
           script: |
             const pr = context.payload.issue.pull_request;
             if (!pr) {
-              throw new Error("The /deploy-pre command must be used in a pull request comment.");
+              throw new Error("This command can only be used on a pull request.");
             }
             return pr.head.ref;
           result-encoding: string
 
-      # Step 3: Trigger Deploy Workflow for the PR Branch
+      # Step 3: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
-        if: steps.check_command.outputs.command == 'true'
+        if: steps.check_command.outputs.valid == 'true'
         uses: actions/github-script@v6
         with:
           script: |
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "deploy-pre.yml", # Replace with your workflow filename
+              workflow_id: "deploy-pre.yml",
               ref: "${{ steps.pr_details.outputs.result }}"
             })
