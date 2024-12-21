@@ -1,6 +1,5 @@
 services:
   api-gateway:
-    image: openjdk:23-jdk-slim
     container_name: api-gateway
     build:
       context: ..
@@ -11,4 +10,5 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/gatewaydb
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
-      SPRING_PROFILES_ACTIVE: docker
+      SPRING_PROFILES_ACTIVE: dev
+
