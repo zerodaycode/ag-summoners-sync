@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: gateway-actuator
+          uri: http://localhost:8080
+          predicates:
+            - Path=/actuator/**
+          filters:
+            - name: JwtValidationFilter
+              args:
+                roles:
+        - id: auth-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/auth/**
+          filters:
+            - name: JwtValidationFilter
+              args:
+                roles: "ROLE_ADMIN,ROLE_USER,ROLE_SERVICE_USER"
+
+      default-filters:
+        - name: StripPrefix
+          args:
+            parts: 1
