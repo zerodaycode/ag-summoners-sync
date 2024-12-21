@@ -1,0 +1,52 @@
+name: Deploy API Gateway to DigitalOcean (PRE)
+
+on:
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker Image
+        run: |
+          docker build -t api-gateway:latest .
+
+      - name: Save Docker Image
+        run: |
+          docker save api-gateway:latest | gzip > api-gateway.tar.gz
+
+      - name: Copy Docker Image and Compose File to Droplet
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: |
+            ./api-gateway.tar.gz
+            ./docker-compose.yml
+          target: /opt/api-gateway/
+
+      - name: Deploy with Docker Compose
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/api-gateway
+
+            # Stop and remove old services
+            docker-compose down || true
+
+            # Load the new Docker image
+            gunzip -c api-gateway.tar.gz | docker load
+
+            # Start the service with the new image
+            docker-compose up -d
