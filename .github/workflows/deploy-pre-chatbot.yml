@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check if the command is `/deploy-pre`
       - name: Check for `/deploy-pre` Command
         id: check_command
         uses: peter-evans/slash-command-action@v4
@@ -18,7 +17,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           command: /deploy-pre
 
-      # Step 2: Extract Branch Reference from PR
       - name: Get Pull Request Details
         if: steps.check_command.outputs.command == 'true'
         id: pr_details
@@ -32,7 +30,6 @@ jobs:
             return pr.head.ref;
           result-encoding: string
 
-      # Step 3: Trigger Deploy Workflow for the PR Branch
       - name: Trigger Deploy Workflow
         if: steps.check_command.outputs.command == 'true'
         uses: actions/github-script@v6
