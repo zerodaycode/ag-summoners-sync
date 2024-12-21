@@ -28,7 +28,8 @@ jobs:
 
       # Debug: Log the output of check_command
       - name: Debug Command Check
-        run: echo "Valid command: ${{ steps.check_command.outputs.valid }}"
+        run: |
+          echo "Valid command: ${{ steps.check_command.outputs.valid }}"
 
       # Step 2: Get Branch from PR
       - name: Extract PR Branch
