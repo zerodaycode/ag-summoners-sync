@@ -1,0 +1,40 @@
+name: Detect Main Language
+
+on:
+  workflow_call:
+    inputs: {}
+
+jobs:
+  detect-language:
+    runs-on: ubuntu-latest
+    outputs:
+      language: ${{ steps.language.outputs.language }}
+    steps:
+      - name: Install jq
+        run: sudo apt-get install jq
+
+      - name: Get main language of repository
+        id: language
+        run: |
+          # Fetch the main language and set it as output directly
+          echo "language=$(curl -s https://api.github.com/repos/${{ github.repository }} | jq -r .language)" >> $GITHUB_OUTPUT
+
+      - name: Supported language of workflows
+        run: |
+          SUPPORTED_LANGUAGES=("Java" "Python" "Rust" "Go" "Dart" "JavaScript" "C++")
+          LANGUAGE_SUPPORTED=false
+          
+          # Loop to check if the detected language is supported
+          for SUPPORTED_LANGUAGE in "${SUPPORTED_LANGUAGES[@]}"; do
+            if [[ "$SUPPORTED_LANGUAGE" == "${{ steps.language.outputs.language }}" ]]; then
+              LANGUAGE_SUPPORTED=true
+              break
+            fi
+          done
+          
+          if $LANGUAGE_SUPPORTED; then
+            echo "Supported language detected: ${{ steps.language.outputs.language }}"
+          else
+            echo "Error: The detected language (${{ steps.language.outputs.language }}) is not supported in subsequent workflows that rely on this one."
+            exit 1
+          fi
