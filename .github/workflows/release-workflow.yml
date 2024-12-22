@@ -1,0 +1,33 @@
+name: Release workflow
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Generate Changelog
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          configuration: config/changelog-config.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Append Changelog to CHANGELOG.md
+        uses: andstor/write-file-action@v1.3
+        with:
+          path: CHANGELOG.md
+          content: ${{ steps.build_changelog.outputs.changelog }}
+          write-mode: append
+
+      - name: Commit and Push Changes
+        uses: EndBug/add-and-commit@v9.1.4
+        with:
+          message: 'Update CHANGELOG.md with latest changes'
+          add: 'CHANGELOG.md'
