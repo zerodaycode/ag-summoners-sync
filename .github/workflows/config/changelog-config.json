@@ -1,0 +1,75 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 Features",
+      "labels": ["feature", "enhancement"]
+    },
+    {
+      "title": "## 🐛 Fixes",
+      "labels": ["fix", "bug"]
+    },
+    {
+      "title": "## 📚 Documentation",
+      "labels": ["docs", "documentation"]
+    },
+    {
+      "title": "## 🧪 Tests",
+      "labels": ["test", "testing"]
+    },
+    {
+      "title": "## 🛠️ Maintenance",
+      "labels": ["chore", "refactor", "ci"]
+    }
+  ],
+  "ignore_labels": [
+    "wip", "ignore", "do-not-merge"
+  ],
+  "sort": {
+    "order": "DESC",
+    "on_property": "mergedAt"
+  },
+  "template": "# Changelog for Release\n\n#{{CHANGELOG}}\n\n<details>\n<summary>Uncategorized Changes</summary>\n\n#{{UNCATEGORIZED}}\n</details>",
+  "pr_template": "- {{TITLE}} ([#{{NUMBER}}](https://github.com/{{REPO}}/pull/{{NUMBER}})) by @{{AUTHOR}}",
+  "empty_template": "No changes in this release.",
+  "label_extractor": [
+    {
+      "pattern": "^\\[(feature|fix|docs|test|chore|ci|enhancement|bug|refactor|dependencies|documentation|testing)\\]",
+      "target": "$1",
+      "flags": "i"
+    },
+    {
+      "pattern": "(feature|fix|docs|test|chore|ci|enhancement|bug|refactor|dependencies|documentation|testing)",
+      "on_property": "title",
+      "method": "match",
+      "flags": "i"
+    }
+  ],
+  "duplicate_filter": {
+    "pattern": "^(\\[Issue\\]|\\[Task\\]).*",
+    "on_property": "title",
+    "method": "match"
+  },
+  "transformers": [
+    {
+      "pattern": "(- \\[.+\\]\\()(.+?)(\\))",
+      "target": "- [$2]$3"
+    }
+  ],
+  "trim_values": true,
+  "max_tags_to_fetch": 100,
+  "max_pull_requests": 100,
+  "max_back_track_time_days": 180,
+  "exclude_merge_branches": [
+    "feature/experimental", "hotfix"
+  ],
+  "base_branches": [
+    "main", "develop"
+  ],
+  "tag_resolver": {
+    "method": "semver",
+    "filter": {
+      "pattern": "v(\\d+\\.\\d+\\.\\d+)",
+      "flags": "gu"
+    }
+  }
+}

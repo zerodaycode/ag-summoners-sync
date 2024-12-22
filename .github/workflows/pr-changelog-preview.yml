@@ -1,0 +1,31 @@
+name: PR Changelog Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  changelog_preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate Changelog Preview
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v5
+        with:
+          configuration: config/changelog-config.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post Changelog to PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: changelog-preview
+          message: |
+            ## Changelog Preview
+            ${{ steps.changelog.outputs.changelog }}
