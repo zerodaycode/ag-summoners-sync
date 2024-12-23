@@ -12,10 +12,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Build the Docker image
-      - name: Build Docker Image
+      # Step 2: Build the Docker image using Docker Compose
+      - name: Build Docker Image with Docker Compose
         run: |
-          docker build -t api-gateway:latest -f ./docker/Dockerfile ./docker
+          docker compose -f ./docker/docker-compose.yml build
 
       # Step 3: Save and compress the Docker image
       - name: Save and Compress Docker Image
