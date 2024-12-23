@@ -23,7 +23,7 @@ jobs:
           docker save api-gateway:latest | gzip > api-gateway.tar.gz
 
       - name: Copy Docker Image and Compose File to Droplet
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
