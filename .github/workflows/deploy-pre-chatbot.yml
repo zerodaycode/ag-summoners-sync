@@ -44,10 +44,6 @@ jobs:
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER")
 
-
-          # Log the full PR details for debugging purposes
-          echo "PR Details: $PR_DETAILS"
-          
           # Extract the branch name (head.ref)
           BRANCH=$(echo "$PR_DETAILS" | jq -r '.head.ref')
           
