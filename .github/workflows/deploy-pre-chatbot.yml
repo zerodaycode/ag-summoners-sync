@@ -64,7 +64,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: "deploy-pre.yml",
-              ref: steps.pr_details.outputs.branch,
+              ref: context.env.BRANCH,
             });
       # Step 6: Post Confirmation Comment
       - name: Post Comment to PR
@@ -72,11 +72,10 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const issue_number = context.payload.issue.number;
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issue_number,
-              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${steps.pr_details.outputs.branch}\`.`,
+              issue_number: context.payload.issue.number,
+              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${context.env.BRANCH}\`.`,
             });
-            console.log("Commented back to PR:", issue_number);
+            console.log("Commented back to PR:", context.payload.issue.number);
