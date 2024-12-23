@@ -4,6 +4,7 @@ on:
   issue_comment:
     types:
       - created
+
 jobs:
   handle-slash-command:
     runs-on: ubuntu-latest
@@ -22,11 +23,8 @@ jobs:
             echo "No valid command found."
             echo "valid=false" >> $GITHUB_OUTPUT
           fi
-      # Step 2: Debug Command Check
-      - name: Debug Command Check
-        run: |
-          echo "Valid command: ${{ steps.check_command.outputs.valid }}"
-      # Step 3: Extract PR Branch
+
+      # Step 2: Extract PR Branch
       - name: Extract PR Branch
         if: steps.check_command.outputs.valid == 'true'
         id: pr_details
@@ -44,39 +42,36 @@ jobs:
           # Extract the branch name (head.ref)
           BRANCH=$(echo "$PR_DETAILS" | jq -r '.head.ref')
           
-          # Output the branch name for debugging
-          echo "PR branch: $BRANCH"
-          
-          # Set the branch name as an output and as an ENV VAR
+          # Output the branch name
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "branch=$BRANCH" >> $GITHUB_ENV
-      # Step 4: Debug PR Branch
-      - name: Debug PR Branch
-        if: steps.check_command.outputs.valid == 'true'
-        run: |
-          echo "Branch: ${{ steps.pr_details.outputs.branch }}"
-      # Step 5: Trigger Deploy Workflow
+
+      # Step 3: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
         if: steps.check_command.outputs.valid == 'true'
         uses: actions/github-script@v6
         with:
           script: |
+            const branch = `${{ steps.pr_details.outputs.branch }}`;
+            console.log("Triggering deploy-pre.yml for branch:", branch);
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: "deploy-pre.yml",
-              ref: context.env.branch,
+              ref: branch,
             });
-      # Step 6: Post Confirmation Comment
+
+      # Step 4: Post Confirmation Comment
       - name: Post Comment to PR
         if: steps.check_command.outputs.valid == 'true'
         uses: actions/github-script@v6
         with:
           script: |
+            const branch = `${{ steps.pr_details.outputs.branch }}`;
+            const prNumber = context.payload.issue.number;
+            console.log(`Commenting back on PR #${prNumber}`);
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
-              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${context.env.branch}\`.`,
+              issue_number: prNumber,
+              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${branch}\`.`,
             });
-            console.log("Commented back to PR:", context.payload.issue.number);
