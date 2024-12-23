@@ -37,22 +37,32 @@ jobs:
           script: |
             const issue = context.payload.issue;
             
-            // Log the entire issue object to check its structure
-            console.log("Issue object:", issue);
-            
-            if (!issue.pull_request) {
-              throw new Error("This comment was not made on a pull request.");
+            // Check if the issue is related to a pull request
+            if (!issue.pull_request || !issue.pull_request.url) {
+              throw new Error("This comment is not associated with a pull request.");
             }
             
-            const pr = issue.pull_request;
+            const pr_url = issue.pull_request.url;
             
-            // Check if the PR object is properly defined and contains the necessary properties
-            if (!pr.head || !pr.head.ref) {
+            // Fetch pull request details using the GitHub API
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+            
+            // Log the PR details for debugging
+            console.log("PR details:", pr.data);
+            
+            // Ensure we have the correct branch info
+            if (!pr.data.head || !pr.data.head.ref) {
               throw new Error("Cannot find branch reference in the pull request.");
             }
             
-            console.log("PR branch:", pr.head.ref);
-            return { branch: pr.head.ref };
+            const branch = pr.data.head.ref; // This is the branch name of the PR
+            console.log("PR branch:", branch);
+            
+            return { branch: branch };
           result-encoding: json
 
 
