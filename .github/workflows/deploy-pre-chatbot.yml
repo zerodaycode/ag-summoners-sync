@@ -47,8 +47,9 @@ jobs:
           # Output the branch name for debugging
           echo "PR branch: $BRANCH"
           
-          # Set the branch name as an output
+          # Set the branch name as an output and as an ENV VAR
           echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "branch=$BRANCH" >> $GITHUB_ENV
       # Step 4: Debug PR Branch
       - name: Debug PR Branch
         if: steps.check_command.outputs.valid == 'true'
