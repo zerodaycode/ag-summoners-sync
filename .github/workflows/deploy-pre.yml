@@ -20,8 +20,7 @@ jobs:
       # Step 3: Save and compress the Docker image
       - name: Save and Compress Docker Image
         run: |
-          docker save api-gateway:latest | gzip > api-gateway.tar.gz
-          ls -lh api-gateway.tar.gz
+          docker save api-gateway:latest > api-gateway.tar.gz
 
       # Step 4: Transfer compressed Docker image to the remote server
       - name: Transfer Docker Image to Droplet
@@ -31,7 +30,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           source: api-gateway.tar.gz
-          target: /opt/api-gateway/
+          target: /opt/summoners-sync/api-gateway
 
       # Step 5: Load and run the Docker image on the remote server
       - name: Deploy Docker Image on Remote
@@ -44,14 +43,14 @@ jobs:
             set -e
 
             # Navigate to deployment directory
-            cd /opt/api-gateway
+            cd /opt/summoners-sync/api-gateway
 
             # Load the Docker image
-            gunzip -c api-gateway.tar.gz | docker load
+            docker load < api-gateway.tar.gz
 
             # Stop and remove existing container if it exists
             docker stop api-gateway || true
             docker rm api-gateway || true
 
             # Run the new container
-            docker run -d --name api-gateway --restart always -p 80:80 api-gateway:latest
+            docker run -d --name api-gateway --restart always api-gateway:latest
