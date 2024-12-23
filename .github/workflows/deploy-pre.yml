@@ -16,7 +16,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t api-gateway:latest .
+          docker build -t api-gateway:latest ./docker
 
       - name: Save Docker Image
         run: |
