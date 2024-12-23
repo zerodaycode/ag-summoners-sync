@@ -2,10 +2,10 @@
 FROM maven:3.9.9-ibm-semeru-23-jammy AS build
 WORKDIR /app
 
-COPY ../mvnw ./
-COPY ../.mvn .mvn
-COPY ../pom.xml ./
-COPY ../src/ ./src
+COPY mvnw ./
+COPY .mvn .mvn
+COPY pom.xml ./
+COPY src/ ./src
 
 RUN chmod +x mvnw && \
 #    ./mvnw clean install
