@@ -36,13 +36,25 @@ jobs:
         with:
           script: |
             const issue = context.payload.issue;
+            
+            // Log the entire issue object to check its structure
+            console.log("Issue object:", issue);
+            
             if (!issue.pull_request) {
-              throw new Error("This command can only be used on a pull request.");
+              throw new Error("This comment was not made on a pull request.");
             }
+            
             const pr = issue.pull_request;
+            
+            // Check if the PR object is properly defined and contains the necessary properties
+            if (!pr.head || !pr.head.ref) {
+              throw new Error("Cannot find branch reference in the pull request.");
+            }
+            
             console.log("PR branch:", pr.head.ref);
             return { branch: pr.head.ref };
           result-encoding: json
+
 
       # Step 4: Debug PR Branch
       - name: Debug PR Branch
