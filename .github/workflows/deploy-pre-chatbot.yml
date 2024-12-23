@@ -60,14 +60,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const branch = steps.pr_details.outputs.branch;
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: "deploy-pre.yml",
-              ref: branch,
+              ref: steps.pr_details.outputs.branch,
             });
-            console.log("Triggered deploy-pre workflow for branch:", branch);
       # Step 6: Post Confirmation Comment
       - name: Post Comment to PR
         if: steps.check_command.outputs.valid == 'true'
