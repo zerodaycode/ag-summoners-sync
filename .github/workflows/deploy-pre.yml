@@ -16,12 +16,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t api-gateway:latest ./docker
+          docker-compose -f ./docker/docker-compose.yml build
 
       - name: Save Docker Image
         run: |
-          docker-compose -f ./docker/docker-compose.yml build
-          docker tag $(docker-compose -f ./docker/docker-compose.yml config --services | head -n 1) api-gateway:latest
+          docker save api-gateway:latest | gzip > api-gateway.tar.gz
 
       - name: Copy Docker Image and Compose File to Droplet
         uses: appleboy/scp-action@v0.1.4
