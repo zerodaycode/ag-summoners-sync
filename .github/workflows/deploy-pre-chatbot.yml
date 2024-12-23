@@ -4,7 +4,6 @@ on:
   issue_comment:
     types:
       - created
-
 jobs:
   handle-slash-command:
     runs-on: ubuntu-latest
@@ -13,19 +12,16 @@ jobs:
       # Step 1: Verify Command in Comment
       - name: Check for `/deploy-pre` Command
         id: check_command
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const comment = context.payload.comment.body;
-            console.log("Comment received:", comment);
-            if (comment.trim() === '/deploy-pre') {
-              console.log("Command `/deploy-pre` found.");
-              return { valid: true };
-            }
-            console.log("No valid command found.");
-            return { valid: false };
-          result-encoding: json
-          result: 'steps.check_command.outputs.valid'
+        run: |
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          echo "Comment received: $COMMENT_BODY"
+          if [[ "$COMMENT_BODY" == "/deploy-pre" ]]; then
+            echo "Command `/deploy-pre` found."
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "No valid command found."
+            echo "valid=false" >> $GITHUB_OUTPUT
+          fi
 
       # Step 2: Debug Command Check
       - name: Debug Command Check
@@ -44,14 +40,14 @@ jobs:
               throw new Error("This command can only be used on a pull request.");
             }
             console.log("PR branch:", pr.head.ref);
-            return pr.head.ref;
-          result-encoding: string
+            return { branch: pr.head.ref };
+          result-encoding: json
 
       # Step 4: Debug PR Branch
       - name: Debug PR Branch
         if: steps.check_command.outputs.valid == 'true'
         run: |
-          echo "Branch: ${{ steps.pr_details.outputs.result }}"
+          echo "Branch: ${{ steps.pr_details.outputs.branch }}"
 
       # Step 5: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
@@ -59,13 +55,15 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const branch = '${{ steps.pr_details.outputs.branch }}';  # Access the branch directly as a string
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "deploy-pre.yml", # Replace with your deployment workflow filename
-              ref: "${{ steps.pr_details.outputs.result }}"
-            })
-            console.log("Triggered deploy-pre workflow for branch:", "${{ steps.pr_details.outputs.result }}");
+              workflow_id: "deploy-pre.yml",  # Replace with your workflow file
+              ref: branch,
+            });
+            console.log("Triggered deploy-pre workflow for branch:", branch);
+
 
       # Step 6: Post Confirmation Comment
       - name: Post Comment to PR
@@ -78,6 +76,6 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issue_number,
-              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${{ steps.pr_details.outputs.result }}\`.`
+              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${{ steps.pr_details.outputs.branch }}\`.`
             });
             console.log("Commented back to PR:", issue_number);
