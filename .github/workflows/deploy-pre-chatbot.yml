@@ -62,15 +62,15 @@ jobs:
             const branch = pr.data.head.ref; // This is the branch name of the PR
             console.log("PR branch:", branch);
             
-            return { branch: branch };
-          result-encoding: json
+            return branch;
+          result-encoding: string
 
 
       # Step 4: Debug PR Branch
       - name: Debug PR Branch
         if: steps.check_command.outputs.valid == 'true'
         run: |
-          echo "Branch: ${{ steps.pr_details.outputs.branch }}"
+          echo "Branch: ${{ steps.pr_details.outputs.result }}"
 
       # Step 5: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
