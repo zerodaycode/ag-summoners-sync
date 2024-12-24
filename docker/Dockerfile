@@ -8,7 +8,6 @@ COPY pom.xml ./
 COPY src/ ./src
 
 RUN chmod +x mvnw && \
-#    ./mvnw clean install
     ./mvnw install -DskipTests
 # Package the application (this creates the JAR file)
 RUN mvn clean package -DskipTests
