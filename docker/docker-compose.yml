@@ -7,9 +7,15 @@ services:
     image: api-gateway:latest
     ports:
       - "8080:8080"
+    networks:
+      api_gateway_network:
+        ipv4_address: 172.17.0.2
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://database:5432/gatewaydb
-      SPRING_DATASOURCE_USERNAME: admin
-      SPRING_DATASOURCE_PASSWORD: admin
       SPRING_PROFILES_ACTIVE: dev
+networks:
+  api_gateway_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.17.0.2/16
 

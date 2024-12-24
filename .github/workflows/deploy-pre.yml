@@ -54,4 +54,4 @@ jobs:
             docker load < api-gateway.tar.gz
 
             # Run the new container
-            docker run -d --name api-gateway --restart always api-gateway:latest
+            docker run -d --name api-gateway -e SPRING_PROFILES_ACTIVE=dev --restart always api-gateway:latest
