@@ -8,45 +8,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the code
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Build Docker Image
+      # Step 2: Build the Docker image using Docker Compose
+      - name: Build Docker Image with Docker Compose
         run: |
-          docker build -t api-gateway:latest ./docker
+          docker compose -f ./docker/docker-compose.yml build
 
-      - name: Save Docker Image
+      # Step 3: Save and compress the Docker image
+      - name: Save and Compress Docker Image
         run: |
-          docker save api-gateway:latest | gzip > api-gateway.tar.gz
+          docker save api-gateway:latest > api-gateway.tar.gz
 
-      - name: Copy Docker Image and Compose File to Droplet
-        uses: appleboy/scp-action@v0.1.4
+      # Step 4: Transfer compressed Docker image to the remote server
+      - name: Transfer Docker Image to Droplet
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
-          source: |
-            ./api-gateway.tar.gz
-            ./docker-compose.yml
-          target: /opt/api-gateway/
+          source: api-gateway.tar.gz
+          target: /opt/summoners-sync/api-gateway
 
-      - name: Deploy with Docker Compose
+      # Step 5: Load and run the Docker image on the remote server
+      - name: Deploy Docker Image on Remote
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /opt/api-gateway
+            set -e
 
-            # Stop and remove old services
-            docker-compose down || true
+            # Navigate to deployment directory
+            cd /opt/summoners-sync/api-gateway
+            
+            # Stop and remove existing container if it exists
+            docker stop api-gateway || true
+            docker rm api-gateway || true
+            docker rmi api-gateway || true
 
-            # Load the new Docker image
-            gunzip -c api-gateway.tar.gz | docker load
+            # Load the Docker image
+            docker load < api-gateway.tar.gz
 
-            # Start the service with the new image
-            docker-compose up -d
+            # Run the new container
+            docker run -d --name api-gateway -e SPRING_PROFILES_ACTIVE=dev --restart always api-gateway:latest

@@ -1,4 +1,4 @@
-name: Handle Deploy Commands in PR Comments
+name: Handle PRE env deployment commands in PR Comments
 
 on:
   issue_comment:
@@ -10,37 +10,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check if the command is `/deploy-pre`
+      # Step 1: Verify Command in Comment
       - name: Check for `/deploy-pre` Command
         id: check_command
-        uses: peter-evans/slash-command-action@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          command: /deploy-pre
+        run: |
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          echo "Comment received: $COMMENT_BODY"
+          if [[ "$COMMENT_BODY" == "/deploy-pre" ]]; then
+            echo "Command `/deploy-pre` found."
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "No valid command found."
+            echo "valid=false" >> $GITHUB_OUTPUT
+          fi
 
-      # Step 2: Extract Branch Reference from PR
-      - name: Get Pull Request Details
-        if: steps.check_command.outputs.command == 'true'
+      # Step 2: Extract PR Branch
+      - name: Extract PR Branch
+        if: steps.check_command.outputs.valid == 'true'
         id: pr_details
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const pr = context.payload.issue.pull_request;
-            if (!pr) {
-              throw new Error("The /deploy-pre command must be used in a pull request comment.");
-            }
-            return pr.head.ref;
-          result-encoding: string
+        run: |
+          PR_NUMBER="${{ github.event.issue.number }}"
+          REPO_OWNER="${{ github.repository_owner }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+          
+          echo "Fetching PR details for PR #$PR_NUMBER"
+          
+          # Use GitHub REST API to fetch the PR details
+          PR_DETAILS=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/pulls/$PR_NUMBER")
+          # Extract the branch name (head.ref)
+          BRANCH=$(echo "$PR_DETAILS" | jq -r '.head.ref')
+          
+          # Output the branch name
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
 
-      # Step 3: Trigger Deploy Workflow for the PR Branch
+      # Step 3: Trigger Deploy Workflow
       - name: Trigger Deploy Workflow
-        if: steps.check_command.outputs.command == 'true'
+        if: steps.check_command.outputs.valid == 'true'
         uses: actions/github-script@v6
         with:
           script: |
+            const branch = `${{ steps.pr_details.outputs.branch }}`;
+            console.log("Triggering deploy-pre.yml for branch:", branch);
             github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: "deploy-pre.yml", # Replace with your workflow filename
-              ref: "${{ steps.pr_details.outputs.result }}"
-            })
+              workflow_id: "deploy-pre.yml",
+              ref: branch,
+            });
+
+      # Step 4: Post Confirmation Comment
+      - name: Post Comment to PR
+        if: steps.check_command.outputs.valid == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branch = `${{ steps.pr_details.outputs.branch }}`;
+            const prNumber = context.payload.issue.number;
+            console.log(`Commenting back on PR #${prNumber}`);
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: `✅ Workflow \`deploy-pre.yml\` has been triggered for branch \`${branch}\`.`,
+            });
