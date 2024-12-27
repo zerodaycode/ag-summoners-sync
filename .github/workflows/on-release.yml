@@ -1,0 +1,14 @@
+name: Release workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  call-release-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Release workflow from App Summoner Sync
+        uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/release-workflow.yml@feature/new-github-actions

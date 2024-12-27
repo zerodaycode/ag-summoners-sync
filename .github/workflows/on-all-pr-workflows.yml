@@ -1,0 +1,13 @@
+name: On all Pull Requests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  call-changelog-workflow:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call PR Changelog Preview workflow from App Summoner Sync
+        uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/pr-changelog-preview.yml@feature/new-github-actions
