@@ -7,4 +7,4 @@ on:
 
 jobs:
   call-release-workflow:
-    uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/release-workflow.yml@feature/new-github-actions
+    uses: zerodaycode/app-summoner-sync/.github/workflows/release-workflow.yml@feature/new-github-actions

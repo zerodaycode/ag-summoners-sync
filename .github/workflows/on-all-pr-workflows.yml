@@ -6,4 +6,4 @@ on:
 
 jobs:
   call-changelog-workflow:
-    uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/pr-changelog-preview.yml@feature/new-github-actions
+    uses: zerodaycode/app-summoner-sync/.github/workflows/pr-changelog-preview.yml@feature/new-github-actions
