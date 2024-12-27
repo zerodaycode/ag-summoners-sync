@@ -7,4 +7,4 @@ on:
 
 jobs:
   call-java-code-quality-workflow:
-    uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/trigger-java-code-quality.yml@feature/new-github-actions
+    uses: zerodaycode/app-summoner-sync/.github/workflows/trigger-java-code-quality.yml@feature/new-github-actions
