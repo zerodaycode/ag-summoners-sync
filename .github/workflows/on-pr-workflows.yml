@@ -9,6 +9,6 @@ on:
 
 jobs:
   call-java-code-quality-workflow:
-    uses: zerodaycode/app-summoners-sync/.github/workflows/trigger-java-code-quality.yml@feature/new-github-actions
+    uses: zerodaycode/app-summoners-sync/.github/workflows/unified-code-quality.yml@feature/new-github-actions
   call-changelog-workflow:
     uses: zerodaycode/app-summoners-sync/.github/workflows/pr-changelog-preview.yml@feature/new-github-actions
