@@ -1,4 +1,4 @@
-name: Main & Develop PR Handlers
+name: Main and Develop PR Handlers
 
 on:
   pull_request:
