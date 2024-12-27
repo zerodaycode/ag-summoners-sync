@@ -7,8 +7,4 @@ on:
 
 jobs:
   call-java-code-quality-workflow:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Call Detect Main Language and Trigger Java Maven Code Quality Workflow
-        uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/trigger-java-code-quality.yml@feature/new-github-actions
+    uses: ${{ github.repository_owner }}/app-summoner-sync/.github/workflows/trigger-java-code-quality.yml@feature/new-github-actions
