@@ -1,0 +1,10 @@
+name: Release workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  call-release-workflow:
+    uses: zerodaycode/app-summoners-sync/.github/workflows/release-workflow.yml@feature/new-github-actions

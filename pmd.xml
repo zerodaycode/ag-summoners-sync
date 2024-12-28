@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Custom Ruleset">
+    <description>
+        Custom ruleset for static code analysis using PMD 7.x.
+    </description>
+
+    <!-- Basic Rules -->
+    <rule ref="java/basic.xml"/>
+    <rule ref="java/braces.xml"/>
+    <rule ref="java/design.xml"/>
+    <rule ref="java/naming.xml"/>
+    <rule ref="java/unusedcode.xml"/>
+    <rule ref="java/comments.xml"/>
+
+    <!-- Specific Custom Rules -->
+    <rule ref="category/java/design.xml/ExcessiveMethodLength">
+        <properties>
+            <property name="minimum" value="50"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/naming.xml/MethodNamingConventions"/>
+</ruleset>
